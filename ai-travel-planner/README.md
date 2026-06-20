@@ -5,8 +5,10 @@ Users register, describe a trip (destination, duration, budget tier, interests),
 generates a day-by-day itinerary, budget breakdown, hotel suggestions, and a weather-aware packing
 checklist — all editable and persisted per-user in MongoDB.
 
-##Live
+
+## Live
 Live: https://aniltravelplaner-1.vercel.app
+
 
 ## Tech Stack
 
@@ -122,7 +124,7 @@ The checklist is interactive — clicking an item toggles `isPacked` and persist
 ## Deployment
 
 - **Backend:** https://aniltravelplaner.onrender.com/api/health
-- 
+  
 - **Frontend:** https://aniltravelplaner-1.vercel.app
 
 ## Author
