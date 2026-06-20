@@ -1,47 +1,50 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { api, clearToken, getUser, ApiError } from '@/utils/api';
-import type { Trip, User } from '@/types';
-import TripList from '@/components/TripList';
-import ItineraryCard from '@/components/ItineraryCard';
-import PackingList from '@/components/PackingList';
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { api, clearToken, getUser, ApiError } from "@/utils/api";
+import type { Trip, User } from "@/types";
+import TripList from "@/components/TripList";
+import ItineraryCard from "@/components/ItineraryCard";
+import PackingList from "@/components/PackingList";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-export default function DashboardPage() {
+// ✅ Inner component that uses useSearchParams
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [user, setUserState] = useState<User | null>(null);
 
   const fetchTrips = useCallback(async () => {
     try {
-      const data = await api.get<Trip[]>('/api/trips');
+      const data = await api.get<Trip[]>("/api/trips");
       setTrips(data);
-      const requestedId = searchParams.get('tripId');
-      const match = requestedId ? data.find((t) => t._id === requestedId) : null;
+      const requestedId = searchParams.get("tripId");
+      const match = requestedId
+        ? data.find((t) => t._id === requestedId)
+        : null;
       setSelectedTrip(match || data[0] || null);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         clearToken();
-        router.push('/login');
+        router.push("/login");
         return;
       }
-      setError('Failed to load your trips. Please refresh the page.');
+      setError("Failed to load your trips. Please refresh the page.");
     } finally {
       setLoading(false);
     }
   }, [router, searchParams]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && !localStorage.getItem('token')) {
-      router.push('/login');
+    if (typeof window !== "undefined" && !localStorage.getItem("token")) {
+      router.push("/login");
       return;
     }
     setUserState(getUser<User>());
@@ -50,11 +53,11 @@ export default function DashboardPage() {
 
   const handleLogout = () => {
     clearToken();
-    router.push('/login');
+    router.push("/login");
   };
 
   const handleDeleteTrip = async (tripId: string) => {
-    if (!confirm('Delete this trip permanently?')) return;
+    if (!confirm("Delete this trip permanently?")) return;
     try {
       await api.delete(`/api/trips/${tripId}`);
       const remaining = trips.filter((t) => t._id !== tripId);
@@ -63,66 +66,81 @@ export default function DashboardPage() {
         setSelectedTrip(remaining[0] || null);
       }
     } catch {
-      alert('Failed to delete trip.');
+      alert("Failed to delete trip.");
     }
   };
 
   const handleAddActivity = async (dayNumber: number, title: string) => {
     if (!selectedTrip) return;
     try {
-      const updated = await api.post<Trip>(`/api/trips/${selectedTrip._id}/activities`, {
-        dayNumber,
-        activity: { title, description: 'Added by traveler', estimatedCostUSD: 0, timeOfDay: 'Afternoon' },
-      });
+      const updated = await api.post<Trip>(
+        `/api/trips/${selectedTrip._id}/activities`,
+        {
+          dayNumber,
+          activity: {
+            title,
+            description: "Added by traveler",
+            estimatedCostUSD: 0,
+            timeOfDay: "Afternoon",
+          },
+        },
+      );
       setSelectedTrip(updated);
-      setTrips((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
+      setTrips((prev) =>
+        prev.map((t) => (t._id === updated._id ? updated : t)),
+      );
     } catch {
-      alert('Failed to add activity.');
+      alert("Failed to add activity.");
     }
   };
 
   const handleRemoveActivity = async (dayNumber: number, activityId: string) => {
     if (!selectedTrip) return;
     try {
-      const updated = await api.post<Trip>(`/api/trips/${selectedTrip._id}/activities/remove`, {
-        dayNumber,
-        activityId,
-      });
+      const updated = await api.post<Trip>(
+        `/api/trips/${selectedTrip._id}/activities/remove`,
+        { dayNumber, activityId },
+      );
       setSelectedTrip(updated);
-      setTrips((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
+      setTrips((prev) =>
+        prev.map((t) => (t._id === updated._id ? updated : t)),
+      );
     } catch {
-      alert('Failed to remove activity.');
+      alert("Failed to remove activity.");
     }
   };
 
   const handleRegenerateDay = async (dayNumber: number, feedback: string) => {
     if (!selectedTrip) return;
     try {
-      const updated = await api.post<Trip>(`/api/trips/${selectedTrip._id}/regenerate-day`, {
-        dayNumber,
-        feedback,
-      });
+      const updated = await api.post<Trip>(
+        `/api/trips/${selectedTrip._id}/regenerate-day`,
+        { dayNumber, feedback },
+      );
       setSelectedTrip(updated);
-      setTrips((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
+      setTrips((prev) =>
+        prev.map((t) => (t._id === updated._id ? updated : t)),
+      );
     } catch {
-      alert('Failed to regenerate day. The AI service may be busy — please try again.');
+      alert("Failed to regenerate day. The AI service may be busy — please try again.");
     }
   };
 
   const handleTogglePacking = async (itemId: string) => {
     if (!selectedTrip) return;
     const updatedPacking = selectedTrip.packingList.map((item) =>
-      item._id === itemId ? { ...item, isPacked: !item.isPacked } : item
+      item._id === itemId ? { ...item, isPacked: !item.isPacked } : item,
     );
-    // Optimistic update
     setSelectedTrip({ ...selectedTrip, packingList: updatedPacking });
     try {
       const updated = await api.put<Trip>(`/api/trips/${selectedTrip._id}`, {
         packingList: updatedPacking,
       });
-      setTrips((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
+      setTrips((prev) =>
+        prev.map((t) => (t._id === updated._id ? updated : t)),
+      );
     } catch {
-      alert('Failed to update packing list.');
+      alert("Failed to update packing list.");
     }
   };
 
@@ -263,6 +281,21 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+// ✅ Outer page component wraps inner in Suspense
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center h-screen bg-slate-50">
+          <p className="text-slate-500 animate-pulse">Loading your trips...</p>
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
   );
 }
 
