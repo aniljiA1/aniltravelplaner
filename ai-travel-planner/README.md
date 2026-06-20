@@ -5,6 +5,9 @@ Users register, describe a trip (destination, duration, budget tier, interests),
 generates a day-by-day itinerary, budget breakdown, hotel suggestions, and a weather-aware packing
 checklist — all editable and persisted per-user in MongoDB.
 
+##Live
+Live: https://aniltravelplaner-1.vercel.app
+
 ## Tech Stack
 
 - **Frontend:** Next.js 14 (App Router) + TypeScript + Tailwind CSS
@@ -45,7 +48,7 @@ ai-travel-planner/
 ```bash
 cd backend
 npm install
-cp .env.example .env
+cp .env
 # Fill in MONGO_URI, JWT_SECRET, GEMINI_API_KEY in .env
 npm run dev   # starts on http://localhost:5000
 ```
@@ -55,7 +58,7 @@ npm run dev   # starts on http://localhost:5000
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local
+cp .env
 # NEXT_PUBLIC_API_URL=http://localhost:5000
 npm run dev   # starts on http://localhost:3000
 ```
@@ -118,6 +121,9 @@ The checklist is interactive — clicking an item toggles `isPacked` and persist
 
 ## Deployment
 
-- **Backend:** Deploy to Render/Railway. Set `MONGO_URI`, `JWT_SECRET`, `GEMINI_API_KEY`,
-  `CLIENT_ORIGIN` (your deployed frontend URL) as environment variables.
-- **Frontend:** Deploy to Vercel. Set `NEXT_PUBLIC_API_URL` to your deployed backend URL.
+- **Backend:** https://aniltravelplaner.onrender.com/api/health
+- 
+- **Frontend:** https://aniltravelplaner-1.vercel.app
+
+## Author
+**Anil Kumar**
