@@ -9,6 +9,8 @@ import TripList from '@/components/TripList';
 import ItineraryCard from '@/components/ItineraryCard';
 import PackingList from '@/components/PackingList';
 
+export const dynamic = 'force-dynamic';
+
 export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
